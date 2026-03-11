@@ -1,6 +1,16 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Slider } from "@/components/ui/slider";
 
 const LOWERCASE = "abcdefghijklmnopqrstuvwxyz";
 const UPPERCASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -55,94 +65,78 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6">
-      <section className="w-full max-w-xl rounded-2xl border border-slate-800 bg-slate-900 p-6 sm:p-8 shadow-2xl">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-2">密码生成器</h1>
-        <p className="text-slate-400 mb-6">自定义规则，一键生成强密码</p>
-
-        <div className="rounded-xl border border-slate-800 bg-slate-950 p-4 mb-6">
-          <div className="text-sm text-slate-400 mb-2">生成结果</div>
-          <div className="font-mono text-lg break-all min-h-8">
-            {password || "点击下方按钮生成密码"}
+      <Card className="w-full max-w-xl shadow-2xl">
+        <CardHeader>
+          <CardTitle>密码生成器</CardTitle>
+          <CardDescription>自定义规则，一键生成强密码</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-xl border border-slate-800 bg-slate-950 p-4 mb-6">
+            <div className="text-sm text-slate-400 mb-2">生成结果</div>
+            <div className="font-mono text-lg break-all min-h-8">
+              {password || "点击下方按钮生成密码"}
+            </div>
           </div>
-        </div>
 
-        <div className="mb-6">
-          <label className="flex justify-between text-sm mb-2">
-            <span>密码长度</span>
-            <span className="text-cyan-400">{length}</span>
-          </label>
-          <input
-            type="range"
-            min={8}
-            max={64}
-            value={length}
-            onChange={(event) => setLength(Number(event.target.value))}
-            className="w-full accent-cyan-500"
-          />
-        </div>
+          <div className="mb-6">
+            <label className="flex justify-between text-sm mb-3">
+              <span>密码长度</span>
+              <span className="text-cyan-400">{length}</span>
+            </label>
+            <Slider
+              min={8}
+              max={64}
+              step={1}
+              value={[length]}
+              onValueChange={(value) => setLength(value[0] ?? 16)}
+            />
+          </div>
 
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={useLowercase}
-              onChange={(event) => setUseLowercase(event.target.checked)}
-              className="accent-cyan-500"
-            />
-            小写字母
-          </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={useUppercase}
-              onChange={(event) => setUseUppercase(event.target.checked)}
-              className="accent-cyan-500"
-            />
-            大写字母
-          </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={useNumbers}
-              onChange={(event) => setUseNumbers(event.target.checked)}
-              className="accent-cyan-500"
-            />
-            数字
-          </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={useSymbols}
-              onChange={(event) => setUseSymbols(event.target.checked)}
-              className="accent-cyan-500"
-            />
-            特殊符号
-          </label>
-        </div>
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            <label className="flex items-center gap-2 text-sm">
+              <Checkbox
+                checked={useLowercase}
+                onCheckedChange={(checked) => setUseLowercase(checked === true)}
+              />
+              小写字母
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <Checkbox
+                checked={useUppercase}
+                onCheckedChange={(checked) => setUseUppercase(checked === true)}
+              />
+              大写字母
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <Checkbox
+                checked={useNumbers}
+                onCheckedChange={(checked) => setUseNumbers(checked === true)}
+              />
+              数字
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <Checkbox
+                checked={useSymbols}
+                onCheckedChange={(checked) => setUseSymbols(checked === true)}
+              />
+              特殊符号
+            </label>
+          </div>
 
-        {!canGenerate && (
-          <p className="text-amber-400 text-sm mb-4">请至少选择一种字符类型</p>
-        )}
+          {!canGenerate && (
+            <p className="text-amber-400 text-sm mb-4">请至少选择一种字符类型</p>
+          )}
 
-        <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={handleGenerate}
-            disabled={!canGenerate}
-            className="flex-1 rounded-lg bg-cyan-500 text-slate-950 font-semibold py-2.5 hover:bg-cyan-400 disabled:opacity-40 disabled:cursor-not-allowed transition"
-          >
-            生成密码
-          </button>
-          <button
-            type="button"
-            onClick={handleCopy}
-            disabled={!password}
-            className="rounded-lg border border-slate-700 px-4 py-2.5 text-sm hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition"
-          >
-            {copied ? "已复制" : "复制"}
-          </button>
-        </div>
-      </section>
+          <div className="flex gap-3">
+            <Button type="button" onClick={handleGenerate} disabled={!canGenerate} className="flex-1">
+              生成密码
+            </Button>
+            <Button type="button" onClick={handleCopy} disabled={!password} variant="outline">
+              {copied ? "已复制" : "复制"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </main>
   );
 }
