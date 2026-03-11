@@ -1,101 +1,148 @@
-import Image from "next/image";
+"use client";
+
+import { useMemo, useState } from "react";
+
+const LOWERCASE = "abcdefghijklmnopqrstuvwxyz";
+const UPPERCASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const NUMBERS = "0123456789";
+const SYMBOLS = "!@#$%^&*()-_=+[]{};:,.?/|";
+
+function generatePassword(length: number, charPool: string) {
+  if (!charPool || length <= 0) return "";
+
+  const randomBytes = new Uint32Array(length);
+  crypto.getRandomValues(randomBytes);
+
+  let result = "";
+  for (let i = 0; i < length; i += 1) {
+    const index = randomBytes[i] % charPool.length;
+    result += charPool[index];
+  }
+  return result;
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [length, setLength] = useState(16);
+  const [useLowercase, setUseLowercase] = useState(true);
+  const [useUppercase, setUseUppercase] = useState(true);
+  const [useNumbers, setUseNumbers] = useState(true);
+  const [useSymbols, setUseSymbols] = useState(true);
+  const [password, setPassword] = useState("");
+  const [copied, setCopied] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const charPool = useMemo(() => {
+    let pool = "";
+    if (useLowercase) pool += LOWERCASE;
+    if (useUppercase) pool += UPPERCASE;
+    if (useNumbers) pool += NUMBERS;
+    if (useSymbols) pool += SYMBOLS;
+    return pool;
+  }, [useLowercase, useUppercase, useNumbers, useSymbols]);
+
+  const canGenerate = charPool.length > 0;
+
+  function handleGenerate() {
+    setCopied(false);
+    setPassword(generatePassword(length, charPool));
+  }
+
+  async function handleCopy() {
+    if (!password) return;
+    await navigator.clipboard.writeText(password);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1200);
+  }
+
+  return (
+    <main className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6">
+      <section className="w-full max-w-xl rounded-2xl border border-slate-800 bg-slate-900 p-6 sm:p-8 shadow-2xl">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">密码生成器</h1>
+        <p className="text-slate-400 mb-6">自定义规则，一键生成强密码</p>
+
+        <div className="rounded-xl border border-slate-800 bg-slate-950 p-4 mb-6">
+          <div className="text-sm text-slate-400 mb-2">生成结果</div>
+          <div className="font-mono text-lg break-all min-h-8">
+            {password || "点击下方按钮生成密码"}
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+
+        <div className="mb-6">
+          <label className="flex justify-between text-sm mb-2">
+            <span>密码长度</span>
+            <span className="text-cyan-400">{length}</span>
+          </label>
+          <input
+            type="range"
+            min={8}
+            max={64}
+            value={length}
+            onChange={(event) => setLength(Number(event.target.value))}
+            className="w-full accent-cyan-500"
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={useLowercase}
+              onChange={(event) => setUseLowercase(event.target.checked)}
+              className="accent-cyan-500"
+            />
+            小写字母
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={useUppercase}
+              onChange={(event) => setUseUppercase(event.target.checked)}
+              className="accent-cyan-500"
+            />
+            大写字母
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={useNumbers}
+              onChange={(event) => setUseNumbers(event.target.checked)}
+              className="accent-cyan-500"
+            />
+            数字
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={useSymbols}
+              onChange={(event) => setUseSymbols(event.target.checked)}
+              className="accent-cyan-500"
+            />
+            特殊符号
+          </label>
+        </div>
+
+        {!canGenerate && (
+          <p className="text-amber-400 text-sm mb-4">请至少选择一种字符类型</p>
+        )}
+
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={handleGenerate}
+            disabled={!canGenerate}
+            className="flex-1 rounded-lg bg-cyan-500 text-slate-950 font-semibold py-2.5 hover:bg-cyan-400 disabled:opacity-40 disabled:cursor-not-allowed transition"
+          >
+            生成密码
+          </button>
+          <button
+            type="button"
+            onClick={handleCopy}
+            disabled={!password}
+            className="rounded-lg border border-slate-700 px-4 py-2.5 text-sm hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition"
+          >
+            {copied ? "已复制" : "复制"}
+          </button>
+        </div>
+      </section>
+    </main>
   );
 }
